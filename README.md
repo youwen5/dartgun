@@ -146,3 +146,7 @@ time you update the files in your dartgun folder. generally, we do not recommend
 the copy method unless you have to for some reason, since it may lead to desyncs
 between the dartgun folder and your actual system, while this is impossible with
 hardlinking or symlinking.
+
+## License
+
+This project is licensed under [GPLv3](./LICENSE).
