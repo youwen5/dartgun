@@ -15,8 +15,7 @@ struct DotfileRaw {
     location: String,
     destination: String,
     strategy: String,
-    machines: Vec<String>,
-    applies_to: String,
+    identifiers: Vec<String>,
 }
 
 impl DotfileRaw {
@@ -38,8 +37,7 @@ impl DotfileRaw {
             location: location_path,
             destination: destination_path,
             strategy: self.determine_strategy()?,
-            machines: self.machines.clone(),
-            applies_to: self.applies_to.clone(),
+            identifiers: self.identifiers.clone(),
         })
     }
     // TODO: improve error handling for parsing from raw TOML
@@ -68,56 +66,46 @@ impl DotfileRaw {
             .as_str()
             .unwrap()
             .to_string();
-        let machines = table
-            .get("machines")
-            .ok_or("Missing 'machines' field.")
+        let identifiers = table
+            .get("identifiers")
+            .ok_or("Missing 'identifiers' field.")
             .unwrap()
             .as_array()
             .unwrap()
             .iter()
             .map(|x| x.as_str().unwrap().to_string())
             .collect();
-        let applies_to = table
-            .get("applies_to")
-            .ok_or("Missing 'applies_to' field.")
-            .unwrap()
-            .as_str()
-            .unwrap()
-            .to_string();
 
         DotfileRaw {
             location,
             destination,
             strategy,
-            machines,
-            applies_to,
+            identifiers,
         }
     }
 }
 
 /// The configuration object parsed from the `config` field in `dartgun.toml`
 #[derive(Debug)]
-pub struct Config {
-    machine: String,
-    available: Vec<String>,
+pub struct Machine {
+    identifiers: Vec<String>,
 }
 
-impl Config {
+impl Machine {
     // TODO: improve error handling for parsing config
 
     /// Generate a `Config` from a raw `dartfile.toml`.
     /// Will panic! if the format is invalid.
-    fn from_table(table: Table) -> Config {
-        let machine = table.get("machine").unwrap().as_str().unwrap().to_string();
-        let available = table
-            .get("available")
+    fn from_table(table: Table) -> Machine {
+        let identifiers = table
+            .get("identifiers")
             .unwrap()
             .as_array()
             .unwrap()
             .iter()
             .map(|x| x.as_str().unwrap().to_string())
             .collect();
-        Config { available, machine }
+        Machine { identifiers }
     }
 }
 
@@ -125,7 +113,7 @@ impl Config {
 /// struct can assume that the dartfile is at least semantically valid
 #[derive(Debug)]
 pub struct Dartfile {
-    pub config: Config,
+    pub machine: Machine,
     pub dots: Vec<Dotfile>,
 }
 
@@ -155,8 +143,7 @@ pub struct Dotfile {
     pub location: PathBuf,
     pub destination: PathBuf,
     pub strategy: Strategy,
-    pub machines: Vec<String>,
-    pub applies_to: String,
+    pub identifiers: Vec<String>,
 }
 
 impl Dotfile {
@@ -174,14 +161,19 @@ impl Dotfile {
 
 /// Takes a path to a `dartgun.toml` and produces a well-typed Dartfile object.
 /// Currently crashes on any parse errors, but this behavior will likely change in the future.
-pub fn parse(path: &Path) -> Dartfile {
-    let raw_data = fs::read_to_string(path).expect("Couldn't read the file.");
-    let value: Table = raw_data.parse::<Table>().expect("Couldn't parse the TOML.");
+pub fn parse(dartgun_path: &Path, machine_path: &Path) -> Dartfile {
+    let dartgun_toml = fs::read_to_string(dartgun_path)
+        .expect("Couldn't read dartgun.toml")
+        .parse::<Table>()
+        .expect("Couldn't parse the TOML.");
+    let machine_toml = fs::read_to_string(machine_path)
+        .expect("Couldn't read machine.toml")
+        .parse::<Table>()
+        .expect("Couldn't parse the TOML.");
 
-    let config_raw = value.get("config").unwrap().as_table().unwrap();
-    let dots_raw = value.get("dots").unwrap().as_array().unwrap();
+    let dots_raw = dartgun_toml.get("dots").unwrap().as_array().unwrap();
 
-    let config = Config::from_table(config_raw.clone());
+    let machine = Machine::from_table(machine_toml);
     let dots = dots_raw
         .iter()
         .map(|x| {
@@ -192,5 +184,5 @@ pub fn parse(path: &Path) -> Dartfile {
         })
         .collect::<Vec<Dotfile>>();
 
-    Dartfile { config, dots }
+    Dartfile { machine, dots }
 }

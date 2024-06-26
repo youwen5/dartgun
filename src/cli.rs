@@ -13,7 +13,7 @@ struct Cli {
 
 fn fire() {
     println!("Attempting to find and read `dartfile.toml`.");
-    let gun = dartfile::parse(Path::new("./dartgun.toml"));
+    let gun = dartfile::parse(Path::new("./dartgun.toml"), Path::new("./machine.toml"));
     println!("Writing symlinks...");
     match gun.create_symlinks() {
         Ok(_) => println!("Symlinks created successfully!"),
