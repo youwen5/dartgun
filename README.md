@@ -18,7 +18,8 @@ really amount to more than a set of bash scripts to copy their dotfiles around
 their system. A more "robust" tool which offers many features for managing your
 configuration files also ends up requiring the user to look through a
 [massive manpage](https://www.gnu.org/software/stow/manual/stow.txt). Whatever
-happened to doing one thing, and doing it well?
+happened to
+[doing one thing, and doing it well](https://suckless.org/philosophy/)?
 
 Dartgun's design statement is to be as simple as possible while providing just
 enough features for most non power users. Anyone who reads through the example
