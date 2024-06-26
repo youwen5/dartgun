@@ -13,19 +13,42 @@ deploy to new machines. However, configuration files often end up all over a
 system. There's [NixOS](https://nixos.org/), but not everyone can dedicate 40
 hours a week to configuring their OS.
 
-Advanced solutions dotfile helpers, but most users don't really need much more
-than a set of bash scripts which copies their dotfiles around their system.
+Advanced dotfile helper solutions do exist, but what most users need doesn't
+really amount to more than a set of bash scripts to copy their dotfiles around
+their system. A more "robust" tool which offers many features for managing your
+configuration files also ends up requiring the user to look through a
+[massive manpage](https://www.gnu.org/software/stow/manual/stow.txt). Whatever
+happened to doing one thing, and doing it well?
 
-Dartgun essentially does this in a more systematic manner, and seeks to be just
-as still simple to set up and manage. Everything lives in one folder which can
-be versioned by git. Dartgun will put your dotfiles in the correct places by
-symlinking from the central dotfile directory to the specified locations.
+Dartgun's design statement is to be as simple as possible while providing just
+enough features for most non power users. Anyone who reads through the example
+configuration files should be able to utilize all of dartgun's features
+immediately. It does not offer any advanced features or configuration options,
+and is managed by a single `toml` file.
 
-The primary goal is to provide an easy way to manage your dotfiles in a
-centralized area and sync them between different systems. A secondary goal is to
-help automatically set up a new system with the configuration files in the
-correct places. However, automatically installing additional software and
-dependencies is outside of the scope of the project.
+Dartgun essentially takes a central repository of configuration files and places
+them into the correct places on your system by symlinking (or hardlinking).
+Everything lives in one folder which can be versioned by git. The primary goal
+is to provide an easy way to manage your dotfiles in a centralized area and sync
+them between different systems. Dartgun allows you to specify which
+configuration files are used on which systems by identifying each system with a
+string. Instead of using your machine's `hostname`, the system names are
+user-defined, which gives great configuration flexibility, for free. For
+example, you get specific by giving each system a unique name, or extremely
+general and simply have `mac` and `linux` as system identifiers.
+
+A secondary goal is to assist in setting up a new system by helping place
+configuration files in the correct places. This is useful for chronic
+distro-hoppers or anyone re-installing their OS. However, automatically
+installing additional software and dependencies is outside of the scope of the
+project. Attempting to automatically set up a system via shell scripting (or
+similar methods) is almost always unwieldy and relies on behavior which is
+non-deterministic and may break at any time. NixOS is the best option for this,
+and actually works, but again, requires the user to first dedicate a significant
+amount of time to learning the syntax and idiosyncrasies of NixOS and the Nix
+language.
+
+Dartgun is for people who ain't got that kind of time.
 
 ## Non-goals
 
