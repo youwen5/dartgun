@@ -1,5 +1,5 @@
 [package]
-name = "dartgun-rs"
+name = "dartgun"
 version = "0.1.0"
 edition = "2021"
 
