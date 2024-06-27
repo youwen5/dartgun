@@ -213,27 +213,20 @@ you've set up git versioning.
 ### Linting dartgun.toml
 
 Optionally, you can set up linting for `dartgun.toml` to ensure that it is
-configured properly.
+configured properly. A [JSON schema file](./dartgun.schema.json) is provided for
+validating the structure of `dartgun.toml`.
 
-A JSON schema file is provided for validating the structure of `dartgun.toml`.
-Download it from [this link](./dartgun.schema.json).
+The easiest way to use it is to add this line to the top of `dartgun.toml`.
 
-Place the file in your dartgun directory, such that it looks like this:
+`#:schema https://raw.githubusercontent.com/youwen5/dartgun/main/dartgun.schema.json`
 
-```
-.dartgun/
-  | machine.toml
-  | dartgun.toml
-  | dartgun.schema.json
-```
-
-At the top of your `dartgun.toml` file, add this line.
+Example:
 
 ```toml
 # file: dartgun.toml
 # add the line below to the top of your file, like so
 
-#:schema ./dartgun.schema.json
+#:schema https://raw.githubusercontent.com/youwen5/dartgun/main/dartgun.schema.json
 
 [[dots]]
 location = "./nvim"
