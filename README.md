@@ -1,17 +1,36 @@
 # dartgun
 
-the stupid dotfile manager.
+the stupid dotfile manager
+
+---
+
+<!--toc:start-->
+
+- [dartgun](#dartgun)
+  - [Impetus](#impetus)
+  - [Non-goals](#non-goals)
+  - [Goals](#goals)
+  - [How it works](#how-it-works)
+    - [Sample configuration](#sample-configuration)
+    - [Why symlinking?](#why-symlinking)
+    - [Why no Windows support?](#why-no-windows-support)
+  - [Installation Guide](#installation-guide)
+  - [Usage guide](#usage-guide)
+  - [License](#license)
+  <!--toc:end-->
+
+---
 
 ## Impetus
 
 Managing dot files are annoying. They're some of the most essential parts of a
 developer's system, yet most operating systems (distros) don't provide a way to
-easily manage them. There's the `~/.config` directory, which in theory holds all
-of your configuration files. If this were true, you could simply `git init`
-inside `~/.config` and have a versioned dotfile repo that you could backup and
-deploy to new machines. However, configuration files often end up all over a
-system. There's [NixOS](https://nixos.org/), but not everyone can dedicate 40
-hours a week to configuring their OS.
+easily manage and version them. There's the `~/.config` directory, which in
+theory holds all of your configuration files. If this were true, you could
+simply `git init` inside `~/.config` and have a versioned dotfile repo that you
+could backup and deploy to new machines. However, configuration files often end
+up all over a system. There's [NixOS](https://nixos.org/), but not everyone can
+dedicate 40 hours a week to configuring their OS.
 
 Advanced dotfile helper solutions do exist, but what most users need doesn't
 really amount to more than a set of bash scripts to copy their dotfiles around
@@ -20,6 +39,10 @@ configuration files also ends up requiring the user to look through a
 [massive manpage](https://www.gnu.org/software/stow/manual/stow.txt). Whatever
 happened to
 [doing one thing, and doing it well](https://suckless.org/philosophy/)?
+
+> Ingenious ideas are simple. Ingenious software is simple. [^1]
+
+[^1]: Disclaimer: this software does not claim to be ingenious.
 
 Dartgun's design statement is to be as simple as possible while providing just
 enough features for most non power users. Anyone who reads through the example
@@ -83,25 +106,63 @@ Dartgun is not for:
 
 Dartgun allows you to centralize all of your dotfiles in a single directory.
 
-Dartgun is configured through the `dartgun.toml` file. You should set your
-machine name in this file like so:
+Dartgun is primarily configured through the `dartgun.toml` file, alongside the
+`machine.toml` file to specify machine-specific configuration. If you are using
+`git` to version your dotfile directory, it is recommended that you add
+`machine.toml` to your `.gitignore` since it contains configuration which should
+not be shared across machines.
+
+Currently, the only configuration option in `machine.toml` is the following:
 
 ```toml
-machine = "youwens-mac"
+# file: machine.toml
+
+identifiers = ["arch", "hypr", "etc"]
 ```
 
-Also, it's common to have programs that are not installed on every computer.
-Therefore, each dotfile will specify which application it is for, and whether or
-not it should be applied by default. See the dotfile configuration below for how
-to configure this.
+The primary mechanism by which dartgun determines whether to install a given set
+of dotfiles to a system is through the _identifiers_. These are simply strings
+that can represent whatever you want. You configure a set of identifiers for
+your system in `machine.toml`, and specify which identifiers a given dotfile
+applies to in the `dartgun.toml` file.
 
-You can specify which applications are in which machines with the `apps.toml`
-file.
+This is useful for installing distribution-specific files (like macOS, Arch
+Linux, and Fedora specific files), or for applications which you do not always
+install on every system.
+
+### Sample configuration
+
+Here is the structure of `dartgun.toml`:
 
 ```toml
-[youwens-mac]
-available = ["neovim", "hyprland", "zsh"]
+# file: dartgun.toml
+
+[[dots]]
+# the location of the original files, in the dartgun directory. Can be relative or absolute.
+location = "./nvim"
+#
+# The destination which to place the file at. MUST BE AN ABSOLUTE PATH.
+destination = "/home/youwen/Projects/Mine/2024/dartgun/dartgun-test/target/nvim"
+#
+# Whether to use symbolic linking or hard linking. Symlinking is recommended and
+# should be used unless there is a reason to use hard links instead.
+# Keep in mind hard linking does NOT work on directories.
+strategy = "symlink"
+#
+# The machine identifiers that this dotfile will match. If the identifiers listed
+# in a `machine.toml` match ANY of the identifiers in this list, it will be copied on that machine.
+identifiers = ["linux", "arch", "neovim"]
+
+[[dots]]
+location = "./.zshrc"
+destination = "/home/youwen/.zshrc"
+strategy = "symlink"
+identifiers = ["linux", "macos"]
 ```
+
+As shown, each separate dotfile directory or file should be prefixed with
+`[[dots]]` (technical note: this represents an array of objects in TOML, where
+each entry under `[[dots]]` is an object in the array).
 
 ### Why symlinking?
 
@@ -114,6 +175,10 @@ automatically reflected in the system for free.
 Windows symlinks work a little differently from Unix symlinks. The difference is
 not massive and I plan to look into supporting Windows at a later date.
 
+## Installation Guide
+
+`dartgun` can be built and installed from source through Rust's `cargo`.
+
 ## Usage guide
 
 Begin by creating a folder to place your dotfiles in. I'll refer to it as the
@@ -121,56 +186,29 @@ Begin by creating a folder to place your dotfiles in. I'll refer to it as the
 `~/.dartgun`, but it can be called whatever you want and located wherever you
 want it.
 
-Place your dotfiles in the dartgun folder. You can organize them however you
-want. The primary configuration is done in the `dartgun.json` file, located in
-root of the dartgun folder. In here, you specify where each file or folder in
-the directory goes.
+In this directory, create two files called `machine.toml` and `dartgun.toml`.
+Then, populate it with all of the dotfiles which you would like dartgun to
+manage.
 
-For example, I can tell the `.dartgun/nvim` folder to go to `~/.config/nvim`
-with
+Read [the example configuration files](#sample-configuration) to learn how to
+configure your `machine.toml` and `dartgun.toml`.
 
-```json
-{
-  darts = [
-    {
-      location: "./nvim",
-      destination: "~/.config/nvim",
-      strategy: "hardlink",
-      machines: [youwens-mac, youwens-archlinux],
-      for: "neovim"
-    }
-  ]
-}
-```
+Note that the identifiers system lets you choose how you want to approach the
+machine configuration. You can either have a specific identifier for each
+computer you own, or specify identifier by platform (eg. "arch", "mac",
+"fedora"), or specify identifiers by application (eg. "neovim", "hyprland",
+"zsh"). You can also combine all three, and come up with other identification
+schemes to fit your needs. You can get as fine-grained or generic as you'd like.
 
-```
-location: the relative path, from the dartgun folder, where either the directory or file to be copied is located
-destination: the destination path to which the file should be copied to. must be an absolute path
-strategy: which strategy to use to copy the file. accepts 'hardlink', 'symlink', or 'copy'
-machines: which machine names this file will be copied on
-for: the application which the dotfile is for
-```
+Then, run `dartgun fire` to apply your dotfiles to the locations. For nested
+destination directories, it will attempt create all of the directories in the
+path if they do not exist already. You may have to run `dartgun fire` with
+superuser privileges if you are trying to copy files to restricted locations.
 
-Note that you can choose how you want to approach the machine configuration. You
-can either have a specific machine key for each computer you own, or specify
-machines by platform (eg. "arch", "mac", "fedora"). You can get as fine-grained
-or generic as you'd like.
-
-Then, run `dartgun blast` to apply your dotfiles to the locations. For nested
-destination directories, it will create all of the directories in the chain if
-they do not exist already. You may have to run `sudo dartgun blast` if you are
-trying to copy files to restricted locations.
-
-For symlinked and hardlinked directories, you can simply sync your dotfiles by
-updating them in the dartgun folder, for example by running `git pull` after
+Because the files are symlinked or hardlinked, you can simply sync your dotfiles
+by updating them in the dartgun folder, for example by running `git pull` after
 you've set up git versioning.
-
-If you use the `copy` strategy, then you need to re-run `dartgun blast` each
-time you update the files in your dartgun folder. generally, we do not recommend
-the copy method unless you have to for some reason, since it may lead to desyncs
-between the dartgun folder and your actual system, while this is impossible with
-hardlinking or symlinking.
 
 ## License
 
-This project is licensed under [GPLv3](./LICENSE).
+This project is free software under the [GPL v3](./LICENSE).
