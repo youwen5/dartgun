@@ -16,6 +16,7 @@ the stupid dotfile manager
     - [Why no Windows support?](#why-no-windows-support)
   - [Installation Guide](#installation-guide)
   - [Usage guide](#usage-guide)
+    - [Linting dartgun.toml](#linting-dartguntoml)
   - [License](#license)
   <!--toc:end-->
 
