@@ -1,6 +1,8 @@
-# dartgun
+# dartgun - stupid dotfile manager
 
-the stupid dotfile manager
+Dartgun is a simple command-line tool that takes a single folder of all your
+dotfiles and links them to the correct locations in your computer, to allow easy
+versioning, backup, and deployment of all your configuration files.
 
 ---
 
