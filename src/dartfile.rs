@@ -88,7 +88,7 @@ impl DotfileRaw {
 /// The configuration object parsed from the `config` field in `dartgun.toml`
 #[derive(Debug)]
 pub struct Machine {
-    identifiers: Vec<String>,
+    pub identifiers: Vec<String>,
 }
 
 impl Machine {
