@@ -43,35 +43,36 @@ impl DotfileRaw {
     // TODO: improve error handling for parsing from raw TOML
 
     /// Create a new `DotfileRaw` from a `toml::Table`, which is a `Vec<Value>`.
-    /// Will panic if the table does not contain the fields specified.
+    /// Will panic if the table does not contain the fields specified, except for 'strategy',
+    /// which is `symlink` by default.
     fn from_table(table: Table) -> DotfileRaw {
         let location = table
             .get("location")
             .ok_or("Missing 'location' field.")
             .unwrap()
             .as_str()
-            .unwrap()
+            .expect("Location field must be a string pointing to a valid path!")
             .to_string();
         let destination = table
             .get("destination")
             .ok_or("Missing 'destination' field.")
             .unwrap()
             .as_str()
-            .unwrap()
+            .expect("Destination field must be a string pointing to a valid path!")
             .to_string();
-        let strategy = table
-            .get("strategy")
-            .ok_or("Missing 'strategy' field.")
-            .unwrap()
-            .as_str()
-            .unwrap()
-            .to_string();
+        let strategy = match table.get("strategy") {
+            Some(val) => val
+                .as_str()
+                .expect("Strategy field must be a string!")
+                .to_string(),
+            None => "symlink".to_string(),
+        };
         let identifiers = table
             .get("identifiers")
             .ok_or("Missing 'identifiers' field.")
             .unwrap()
             .as_array()
-            .unwrap()
+            .expect("Identifiers field must be an array of strings!")
             .iter()
             .map(|x| x.as_str().unwrap().to_string())
             .collect();
