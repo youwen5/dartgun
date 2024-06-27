@@ -209,6 +209,39 @@ Because the files are symlinked or hardlinked, you can simply sync your dotfiles
 by updating them in the dartgun folder, for example by running `git pull` after
 you've set up git versioning.
 
+### Linting dartgun.toml
+
+A JSON schema file is provided for validating the structure of
+`dartgun.schema.json`. Download it from [this link](./dartgun.schema.json).
+
+Place the file in your dartgun directory, such that it looks like this:
+
+```
+.dartgun/
+  | machine.toml
+  | dartgun.toml
+  | dartgun.schema.json
+```
+
+At the top of your `dartgun.toml` file, add this line.
+
+```toml
+# file: dartgun.toml
+# add the line below to the top of your file, like so
+
+#:schema ./dartgun.schema.json
+
+[[dots]]
+location = "./nvim"
+destination = "/home/youwen/Projects/Mine/2024/dartgun/dartgun-test/target/nvim"
+strategy = "symlink"
+identifiers = ["linux", "arch", "neovim"]
+```
+
+If your editor is configured with the proper TOML linting extensions (eg.
+[taplo](https://taplo.tamasfe.dev/)), it should lint the file for any errors or
+invalid configuration options.
+
 ## License
 
 This project is free software under the [GPL v3](./LICENSE).
