@@ -212,6 +212,9 @@ you've set up git versioning.
 
 ### Linting dartgun.toml
 
+Optionally, you can set up linting for `dartgun.toml` to ensure that it is
+configured properly.
+
 A JSON schema file is provided for validating the structure of
 `dartgun.schema.json`. Download it from [this link](./dartgun.schema.json).
 
